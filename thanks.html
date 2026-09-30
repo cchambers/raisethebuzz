@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>You're in! Raise the Buzz</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#07060c">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="/">
+        <svg viewBox="0 0 72 32" aria-hidden="true">
+          <path d="M40 12c8 0 18-1 26-4v16c-8-3-18-4-26-4V12z" fill="#2EE6D6"/>
+          <rect x="10" y="12" width="34" height="8" rx="4" fill="#2EE6D6"/>
+          <rect x="2" y="14" width="12" height="4" rx="2" fill="#12897E"/>
+          <ellipse cx="30" cy="10" rx="5" ry="3.4" fill="#FFBF3C"/>
+          <ellipse cx="64" cy="16" rx="1.6" ry="4.2" fill="#07312E"/>
+        </svg>
+        <span>Raise the Buzz</span>
+      </a>
+      <nav class="nav-links" aria-label="Page">
+        <a href="/#ritual">The ritual</a>
+        <a href="/#how">How to kazoo</a>
+        <a href="/#arena">Arena nights</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="solo">
+    <div class="wrap">
+      <p class="kicker">Count me in</p>
+      <h1>You're in.</h1>
+      <p class="lede">Now get one into the hands of the person sitting next to you. A row is enough to start. A section is enough to hear.</p>
+      <aside class="ticket">
+        <p class="kicker">Text your row</p>
+        <p id="row-text">Bringing kazoos to the Hornets game. One note on their free throws, hum along with the songs, and swell when we go on a run. I'll bring extras.</p>
+        <hr class="ticket-rule">
+        <button type="button" class="btn" id="copy">Copy this</button>
+        <p id="copy-status" class="visually-hidden" role="status"></p>
+      </aside>
+      <div class="actions">
+        <button type="button" class="btn ghost" id="drone" aria-pressed="false">
+          <span class="wave" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </span>
+          <span class="when-idle">Practice the free-throw note</span>
+          <span class="when-on">Release to stop</span>
+        </button>
+      </div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Raise the Buzz is a fan ritual. It is not affiliated with the Charlotte Hornets, the NBA, or Spectrum Center.</p>
+    </div>
+  </footer>
+  <script src="/main.js"></script>
+</body>
+</html>
