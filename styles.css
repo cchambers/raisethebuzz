@@ -7,7 +7,7 @@
   --teal: #2ee6d6;
   --teal-deep: #0c7c74;
   --purple: #1d1160;
-  --honey: #ffbf3c;
+  --orange: #ff7a1a;
   --line: rgba(246, 243, 236, 0.14);
   --ticket: #f4efe4;
   --ticket-ink: #17141f;
@@ -67,7 +67,7 @@ a:hover {
   left: 1rem;
   top: -4rem;
   z-index: 40;
-  background: var(--honey);
+  background: var(--orange);
   color: #17120a;
   padding: 0.5rem 0.8rem;
   border-radius: 8px;
@@ -288,7 +288,7 @@ h2 {
 .wordmark:focus-visible,
 .tag:focus-visible,
 input:focus-visible {
-  outline: 3px solid var(--honey);
+  outline: 3px solid var(--orange);
   outline-offset: 3px;
 }
 
@@ -305,8 +305,8 @@ input:focus-visible {
 }
 
 body.is-droning #drone {
-  border-color: var(--honey);
-  background: var(--honey);
+  border-color: var(--orange);
+  background: var(--orange);
   color: #17120a;
 }
 
@@ -545,7 +545,7 @@ body.is-droning .membrane {
   width: 4.5rem;
   height: 4px;
   margin-top: 0.85rem;
-  background: var(--honey);
+  background: var(--orange);
 }
 
 .arena .sub {
@@ -780,7 +780,7 @@ input[type="text"] {
 }
 
 @keyframes membrane {
-  50% { fill: #fff1b8; }
+  50% { fill: #ffd7b0; }
 }
 
 @keyframes bar {
