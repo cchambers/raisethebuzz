@@ -285,6 +285,7 @@ h2 {
 .btn:focus-visible,
 .nav-links a:focus-visible,
 .wordmark:focus-visible,
+.tag:focus-visible,
 input:focus-visible {
   outline: 3px solid var(--honey);
   outline-offset: 3px;
@@ -641,6 +642,45 @@ input[type="text"] {
   width: 1px;
   height: 1px;
   overflow: hidden;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.15rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  padding: 0.35rem 0.75rem 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-family: Teko, Impact, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tag.is-primary {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.tag:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.share-block {
+  max-width: 36rem;
+  margin-top: 2rem;
 }
 
 .site-footer {

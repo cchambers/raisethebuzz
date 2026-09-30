@@ -146,6 +146,73 @@ if (droneButton) {
   window.addEventListener("blur", stopDrone);
 }
 
+const signup = document.querySelector("form[name='bringing-one']");
+if (signup) {
+  signup.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const status = document.querySelector("#form-status");
+    const button = signup.querySelector("[type='submit']");
+    if (button) button.disabled = true;
+    if (status) {
+      status.hidden = true;
+      status.textContent = "";
+    }
+
+    try {
+      const response = await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(new FormData(signup)).toString()
+      });
+      if (!response.ok) throw new Error("form failed");
+      window.location.assign("/thanks");
+    } catch (error) {
+      if (button) button.disabled = false;
+      if (status) {
+        status.hidden = false;
+        status.textContent = "That didn't send. Try it once more.";
+      }
+    }
+  });
+}
+
+const nativeShare = document.querySelector("#native-share");
+if (nativeShare && navigator.share) {
+  nativeShare.hidden = false;
+  nativeShare.addEventListener("click", async () => {
+    try {
+      await navigator.share({
+        title: "Raise the Buzz",
+        text: "Bring a kazoo to the Hive. Drone their free throws. #RaiseTheBuzz #BringAKazoo",
+        url: "https://raisethebuzz.com/"
+      });
+    } catch (error) {
+      /* The share sheet was closed. */
+    }
+  });
+}
+
+const tagStatus = document.querySelector("#tag-status");
+document.querySelectorAll(".tag").forEach((button) => {
+  const label = button.textContent;
+  button.addEventListener("click", async () => {
+    const tag = button.dataset.tag;
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(tag);
+      copied = true;
+    } catch (error) {
+      copied = false;
+    }
+    if (tagStatus) tagStatus.textContent = copied ? `Copied ${tag}` : `Copy ${tag} from the page.`;
+    if (!copied) return;
+    button.textContent = "Copied";
+    window.setTimeout(() => {
+      button.textContent = label;
+    }, 1200);
+  });
+});
+
 if (copyButton && rowText) {
   copyButton.addEventListener("click", async () => {
     const text = rowText.textContent.trim();
