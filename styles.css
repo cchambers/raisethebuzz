@@ -99,7 +99,8 @@ a:hover {
   max-width: 40rem;
 }
 
-section[id] {
+section[id],
+#share {
   scroll-margin-top: 5.25rem;
 }
 
@@ -566,6 +567,16 @@ body.is-droning .membrane {
   margin-top: 0.9rem;
 }
 
+.split {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  align-items: start;
+}
+
+.split .signup {
+  max-width: none;
+}
+
 .signup {
   max-width: 36rem;
   margin-top: 1.6rem;
@@ -717,6 +728,11 @@ input[type="text"] {
 }
 
 @media (min-width: 860px) {
+  .split {
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+  }
+
   .hero-grid {
     grid-template-columns: 1.12fr 0.88fr;
     gap: 2.5rem;
