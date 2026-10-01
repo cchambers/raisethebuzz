@@ -11,10 +11,10 @@
     gtag('config', 'G-L24HXH3QZJ');
   </script>
   <title>Raise the Buzz! Bring a kazoo to the Hive</title>
-  <meta name="description" content="A fan ritual for Charlotte Hornets games. Drone opposing free throws, hum along with the arena songs, and swell when the run starts.">
+  <meta name="description" content="A fan ritual for Charlotte Hornets games. Drone opposing free throws, hum along with the arena songs, and swell when the run starts. No kazoo? This page plays the charge.">
   <link rel="canonical" href="https://raisethebuzz.com/">
   <meta property="og:title" content="Raise the Buzz">
-  <meta property="og:description" content="Bring a kazoo to the Hive. Drone their free throws, hum the songs, swell on the run.">
+  <meta property="og:description" content="Bring a kazoo to the Hive. No kazoo? This page drones, plays the charge, and boos.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://raisethebuzz.com/">
   <meta name="twitter:card" content="summary">
@@ -40,6 +40,7 @@
         <span>Raise the Buzz</span>
       </a>
       <nav class="nav-links" aria-label="Page">
+        <a href="#board">No kazoo</a>
         <a href="#ritual">The ritual</a>
         <a href="#how">How to kazoo</a>
         <a href="#arena">Arena nights</a>
@@ -58,6 +59,7 @@
           <p class="quiet">Imagine the hive coming alive!</p>
           <div class="actions">
             <a class="btn" href="#in">Count me in</a>
+            <a class="btn ghost" href="#board">No kazoo? Use your phone</a>
             <button type="button" class="btn ghost" id="drone" aria-pressed="false">
               <span class="wave" aria-hidden="true">
                 <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
@@ -94,6 +96,41 @@
         <p>Drone their free throws • Hum the songs • Swell on the run • Drone their free throws • Hum the songs • Swell on the run • Drone their free throws • Hum the songs • Swell on the run •</p>
       </div>
     </div>
+
+    <section class="band" id="board">
+      <div class="wrap">
+        <p class="kicker">No kazoo on you</p>
+        <h2>The phone is one.</h2>
+        <p class="sub">Point the speaker at the court. Six notes, then the row yells Charge. Pass this page down the row.</p>
+        <div class="board" role="group" aria-label="Phone kazoo">
+          <button type="button" class="pad" data-voice="drone" aria-pressed="false">
+            <span class="pad-name">Drone</span>
+            <span class="pad-cue">Their free throws</span>
+            <span class="pad-how">Hold</span>
+          </button>
+          <button type="button" class="pad" data-voice="buildup" aria-pressed="false">
+            <span class="pad-name">Dun dun</span>
+            <span class="pad-cue">The six notes</span>
+            <span class="pad-how">Tap</span>
+          </button>
+          <button type="button" class="pad" data-voice="charge" aria-pressed="false">
+            <span class="pad-name">Charge</span>
+            <span class="pad-cue">The shout</span>
+            <span class="pad-how">Tap</span>
+          </button>
+          <button type="button" class="pad" data-voice="boo" aria-pressed="false">
+            <span class="pad-name">Boo</span>
+            <span class="pad-cue">When they earn it</span>
+            <span class="pad-how">Tap</span>
+          </button>
+        </div>
+        <p class="note">Speaker up, and take the phone off silent. Drone their free throws. Tap the six notes, then yell Charge. Boo when they've earned it.</p>
+        <div class="actions">
+          <button type="button" class="btn" id="pass-page">Pass this page</button>
+        </div>
+        <p class="note" id="pass-status" role="status" hidden></p>
+      </div>
+    </section>
 
     <section class="band" id="ritual">
       <div class="wrap">

@@ -2,9 +2,41 @@ const droneButton = document.querySelector("#drone");
 const copyButton = document.querySelector("#copy");
 const rowText = document.querySelector("#row-text");
 const copyStatus = document.querySelector("#copy-status");
+const pads = document.querySelectorAll(".pad");
+
+const presets = {
+  drone: { freq: 185, peak: 0.11, attack: 0.03, lfo: 5.5, depth: 7 },
+  boo: { freq: 330, freqTo: 140, glide: 0.4, peak: 0.15, attack: 0.02, release: 0.26, lfo: 8.5, depth: 18, oneshot: true }
+};
+
+const quarter = 0.34;
+const g4 = 392;
+const c5 = 523.25;
+const e5 = 659.25;
+const g5 = 783.99;
+
+const phrases = {
+  buildup: {
+    peak: 0.14,
+    notes: [
+      { freq: g4, at: 0, dur: 0.09 },
+      { freq: c5, at: quarter / 3, dur: 0.09 },
+      { freq: e5, at: (quarter * 2) / 3, dur: 0.09 },
+      { freq: g5, at: quarter, dur: 0.07 },
+      { freq: e5, at: quarter + quarter * 0.75, dur: 0.055 },
+      { freq: g5, at: quarter * 2, dur: quarter * 2, held: true, peak: 0.18 }
+    ]
+  },
+  charge: {
+    peak: 0.22,
+    notes: [{ freq: c5, at: 0, dur: 0.48, held: true }]
+  }
+};
 
 let audioCtx;
 let nodes;
+let voiceId = 0;
+let heldId = null;
 
 function distortionCurve(amount) {
   const samples = 441;
@@ -16,22 +48,47 @@ function distortionCurve(amount) {
   return curve;
 }
 
-function startDrone() {
+function markPlaying(button) {
+  if (droneButton) {
+    const on = button === droneButton;
+    droneButton.classList.toggle("is-on", on);
+    droneButton.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+  pads.forEach((pad) => {
+    const on = pad === button;
+    pad.classList.toggle("is-on", on);
+    pad.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  document.body.classList.toggle("is-droning", Boolean(button));
+}
+
+function stopNodes(release) {
+  if (!nodes || !audioCtx) return;
+  const fading = nodes;
+  nodes = null;
+  const now = audioCtx.currentTime;
+  const tail = release || 0.05;
+  try {
+    fading.gain.gain.cancelScheduledValues(now);
+    fading.gain.gain.setValueAtTime(Math.max(fading.gain.gain.value, 0.0001), now);
+    fading.gain.gain.exponentialRampToValueAtTime(0.0001, now + tail);
+    fading.osc.stop(now + tail + 0.02);
+    fading.osc2.stop(now + tail + 0.02);
+    if (fading.lfo) fading.lfo.stop(now + tail + 0.02);
+  } catch (error) {
+    /* already stopped */
+  }
+}
+
+function startVoice(preset, button) {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) throw new Error("no audio");
   if (!audioCtx) audioCtx = new Ctx();
   audioCtx.resume();
 
-  if (nodes) {
-    try {
-      nodes.osc.stop();
-      nodes.osc2.stop();
-      nodes.lfo.stop();
-    } catch (error) {
-      /* already stopped */
-    }
-    nodes = null;
-  }
+  const id = voiceId + 1;
+  voiceId = id;
+  stopNodes(0.03);
 
   const osc = audioCtx.createOscillator();
   const osc2 = audioCtx.createOscillator();
@@ -45,9 +102,7 @@ function startDrone() {
   const overtone = audioCtx.createGain();
 
   osc.type = "sawtooth";
-  osc.frequency.value = 185;
   osc2.type = "square";
-  osc2.frequency.value = 370;
   voice.gain.value = 0.85;
   overtone.gain.value = 0.18;
 
@@ -55,21 +110,28 @@ function startDrone() {
   shaper.oversample = "2x";
 
   band.type = "bandpass";
-  band.frequency.value = 1500;
-  band.Q.value = 3.2;
+  band.frequency.value = preset.oneshot ? 1200 : 1500;
+  band.Q.value = preset.oneshot ? 2.2 : 3.2;
 
   low.type = "lowpass";
   low.frequency.value = 2800;
 
   lfo.type = "sine";
-  lfo.frequency.value = 5.5;
-  lfoGain.gain.value = 7;
+  lfo.frequency.value = preset.lfo;
+  lfoGain.gain.value = preset.depth;
   lfo.connect(lfoGain);
   lfoGain.connect(osc.frequency);
 
   const now = audioCtx.currentTime;
+  osc.frequency.setValueAtTime(preset.freq, now);
+  osc2.frequency.setValueAtTime(preset.freq * 2, now);
+  if (preset.freqTo) {
+    osc.frequency.exponentialRampToValueAtTime(preset.freqTo, now + preset.glide);
+    osc2.frequency.exponentialRampToValueAtTime(preset.freqTo * 2, now + preset.glide);
+  }
+
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.06, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(preset.peak, now + preset.attack);
 
   osc.connect(voice);
   osc2.connect(overtone);
@@ -83,67 +145,215 @@ function startDrone() {
   osc.start();
   osc2.start();
   lfo.start();
-  nodes = { osc, osc2, lfo, gain };
+  nodes = { osc, osc2, lfo, gain, oneshot: Boolean(preset.oneshot), id };
 
-  document.body.classList.add("is-droning");
-  droneButton.setAttribute("aria-pressed", "true");
+  if (preset.oneshot) {
+    const releaseAt = now + Math.max(preset.glide || 0, preset.attack) + 0.05;
+    const stopAt = releaseAt + preset.release + 0.03;
+    gain.gain.setValueAtTime(preset.peak, releaseAt);
+    gain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + preset.release);
+    osc.stop(stopAt);
+    osc2.stop(stopAt);
+    lfo.stop(stopAt);
+    osc.onended = () => {
+      if (voiceId !== id) return;
+      nodes = null;
+      markPlaying(null);
+    };
+  }
+
+  markPlaying(button);
 }
 
-function stopDrone() {
-  if (nodes && audioCtx) {
-    const fading = nodes;
-    const now = audioCtx.currentTime;
+function playPhrase(phrase, button) {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) throw new Error("no audio");
+  if (!audioCtx) audioCtx = new Ctx();
+  audioCtx.resume();
+
+  const id = voiceId + 1;
+  voiceId = id;
+  stopNodes(0.02);
+
+  const osc = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const shaper = audioCtx.createWaveShaper();
+  const band = audioCtx.createBiquadFilter();
+  const low = audioCtx.createBiquadFilter();
+  const gain = audioCtx.createGain();
+  const voice = audioCtx.createGain();
+  const overtone = audioCtx.createGain();
+
+  osc.type = "sawtooth";
+  osc2.type = "square";
+  voice.gain.value = 0.92;
+  overtone.gain.value = 0.08;
+  shaper.curve = distortionCurve(14);
+  shaper.oversample = "2x";
+  band.type = "bandpass";
+  band.frequency.value = 900;
+  band.Q.value = 0.8;
+  low.type = "lowpass";
+  low.frequency.value = 4200;
+
+  const t0 = audioCtx.currentTime + 0.02;
+  gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+
+  phrase.notes.forEach((note) => {
+    const start = t0 + note.at;
+    const end = start + note.dur;
+    const level = note.peak || phrase.peak;
+    const attack = Math.min(0.012, note.dur * 0.28);
+    osc.frequency.setValueAtTime(note.freq, start);
+    osc2.frequency.setValueAtTime(note.freq * 2, start);
+    band.frequency.setValueAtTime(Math.min(note.freq * 2.4, 3600), start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(level, start + attack);
+    if (note.held) gain.gain.setValueAtTime(level, Math.max(start + attack + 0.02, end - 0.07));
+    gain.gain.exponentialRampToValueAtTime(0.0001, end);
+  });
+
+  const last = phrase.notes[phrase.notes.length - 1];
+  const stopAt = t0 + last.at + last.dur + 0.03;
+  osc.connect(voice);
+  osc2.connect(overtone);
+  voice.connect(shaper);
+  overtone.connect(shaper);
+  shaper.connect(band);
+  band.connect(low);
+  low.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc2.start();
+  osc.stop(stopAt);
+  osc2.stop(stopAt);
+  nodes = { osc, osc2, lfo: null, gain, oneshot: true, id };
+  osc.onended = () => {
+    if (voiceId !== id) return;
     nodes = null;
-    try {
-      fading.gain.gain.cancelScheduledValues(now);
-      fading.gain.gain.setValueAtTime(Math.max(fading.gain.gain.value, 0.0001), now);
-      fading.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-      fading.osc.stop(now + 0.06);
-      fading.osc2.stop(now + 0.06);
-      fading.lfo.stop(now + 0.06);
-    } catch (error) {
-      /* already stopped */
-    }
+    markPlaying(null);
+  };
+  markPlaying(button);
+}
+
+function stopVoice() {
+  if (nodes && nodes.oneshot) return;
+  voiceId += 1;
+  stopNodes(0.05);
+  markPlaying(null);
+}
+
+function holdStart(button, preset, event) {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  event.preventDefault();
+  heldId = event.pointerId;
+  try {
+    button.setPointerCapture(event.pointerId);
+  } catch (error) {
+    /* capture is optional */
   }
-  document.body.classList.remove("is-droning");
-  if (droneButton) droneButton.setAttribute("aria-pressed", "false");
+  try {
+    startVoice(preset, button);
+  } catch (error) {
+    const idle = button.querySelector(".when-idle");
+    if (idle) idle.textContent = "Hum it yourself";
+  }
+}
+
+function holdEnd(event) {
+  if (heldId !== null && event.pointerId !== heldId) return;
+  heldId = null;
+  stopVoice();
 }
 
 if (droneButton) {
-  droneButton.addEventListener("pointerdown", (event) => {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
+  droneButton.addEventListener("pointerdown", (event) => holdStart(droneButton, presets.drone, event));
+  droneButton.addEventListener("pointerup", holdEnd);
+  droneButton.addEventListener("pointercancel", holdEnd);
+  droneButton.addEventListener("keydown", (event) => {
+    if (event.repeat) return;
+    if (event.key !== " " && event.key !== "Enter") return;
     event.preventDefault();
     try {
-      droneButton.setPointerCapture(event.pointerId);
-    } catch (error) {
-      /* capture is optional */
-    }
-    try {
-      startDrone();
+      startVoice(presets.drone, droneButton);
     } catch (error) {
       const idle = droneButton.querySelector(".when-idle");
       if (idle) idle.textContent = "Hum it yourself";
     }
   });
+  droneButton.addEventListener("keyup", (event) => {
+    if (event.key === " " || event.key === "Enter") stopVoice();
+  });
+}
 
-  droneButton.addEventListener("pointerup", stopDrone);
-  droneButton.addEventListener("pointercancel", stopDrone);
-  droneButton.addEventListener("keydown", (event) => {
+pads.forEach((pad) => {
+  const voice = pad.dataset.voice;
+  const preset = presets[voice];
+  const phrase = phrases[voice];
+  if (!preset && !phrase) return;
+  const play = () => {
+    if (phrase) playPhrase(phrase, pad);
+    else startVoice(preset, pad);
+  };
+  pad.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
+    heldId = event.pointerId;
+    try {
+      pad.setPointerCapture(event.pointerId);
+    } catch (error) {
+      /* capture is optional */
+    }
+    play();
+  });
+  pad.addEventListener("pointerup", holdEnd);
+  pad.addEventListener("pointercancel", holdEnd);
+  pad.addEventListener("contextmenu", (event) => event.preventDefault());
+  pad.addEventListener("keydown", (event) => {
     if (event.repeat) return;
-    if (event.key === " " || event.key === "Enter") {
-      event.preventDefault();
+    if (event.key !== " " && event.key !== "Enter") return;
+    event.preventDefault();
+    play();
+  });
+  pad.addEventListener("keyup", (event) => {
+    if (event.key === " " || event.key === "Enter") stopVoice();
+  });
+});
+
+if (droneButton || pads.length) {
+  window.addEventListener("blur", () => {
+    heldId = null;
+    voiceId += 1;
+    stopNodes(0.05);
+    markPlaying(null);
+  });
+}
+
+const passPage = document.querySelector("#pass-page");
+if (passPage) {
+  passPage.addEventListener("click", async () => {
+    const status = document.querySelector("#pass-status");
+    const url = "https://raisethebuzz.com/#board";
+    const text = "No kazoo? Your phone is one. Six notes, then yell Charge. #RaiseTheBuzz";
+    if (navigator.share) {
       try {
-        startDrone();
+        await navigator.share({ title: "Raise the Buzz", text, url });
+        return;
       } catch (error) {
-        const idle = droneButton.querySelector(".when-idle");
-        if (idle) idle.textContent = "Hum it yourself";
+        if (error && error.name === "AbortError") return;
       }
     }
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      copied = true;
+    } catch (error) {
+      copied = false;
+    }
+    if (!status) return;
+    status.hidden = false;
+    status.textContent = copied ? "Copied. Send it down the row." : "Copy raisethebuzz.com/#board from the address bar.";
   });
-  droneButton.addEventListener("keyup", (event) => {
-    if (event.key === " " || event.key === "Enter") stopDrone();
-  });
-  window.addEventListener("blur", stopDrone);
 }
 
 const signup = document.querySelector("form[name='bringing-one']");

@@ -284,6 +284,7 @@ h2 {
 }
 
 .btn:focus-visible,
+.pad:focus-visible,
 .nav-links a:focus-visible,
 .wordmark:focus-visible,
 .tag:focus-visible,
@@ -304,7 +305,7 @@ input:focus-visible {
   border-color: var(--teal);
 }
 
-body.is-droning #drone {
+#drone.is-on {
   border-color: var(--orange);
   background: var(--orange);
   color: #17120a;
@@ -312,8 +313,8 @@ body.is-droning #drone {
 
 .when-on { display: none; }
 
-body.is-droning .when-idle { display: none; }
-body.is-droning .when-on { display: inline; }
+#drone.is-on .when-idle { display: none; }
+#drone.is-on .when-on { display: inline; }
 
 .wave {
   display: flex;
@@ -336,13 +337,78 @@ body.is-droning .when-on { display: inline; }
 .wave span:nth-child(4n) { transform: scaleY(0.85); }
 .wave span:nth-child(5n) { transform: scaleY(0.45); }
 
-body.is-droning .wave span {
+#drone.is-on .wave span {
   background: #17120a;
   animation: bar 0.28s ease-in-out infinite alternate;
 }
 
-body.is-droning .wave span:nth-child(2n) { animation-duration: 0.36s; }
-body.is-droning .wave span:nth-child(3n) { animation-duration: 0.2s; }
+#drone.is-on .wave span:nth-child(2n) { animation-duration: 0.36s; }
+#drone.is-on .wave span:nth-child(3n) { animation-duration: 0.2s; }
+
+.board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.pad {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  min-height: 8.5rem;
+  padding: 1rem 1.05rem 0.9rem;
+  border: 2px solid rgba(246, 243, 236, 0.16);
+  border-radius: 1.35rem;
+  background: var(--bg-raise);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pad-name {
+  font-family: Teko, Impact, sans-serif;
+  font-size: clamp(2.6rem, 7vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 0.86;
+  text-transform: uppercase;
+}
+
+.pad-cue {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.3;
+}
+
+.pad-how {
+  margin-top: auto;
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pad.is-on {
+  border-color: var(--orange);
+  background: var(--orange);
+  color: #17120a;
+}
+
+.pad.is-on .pad-cue,
+.pad.is-on .pad-how {
+  color: #17120a;
+}
 
 .kazoo-wrap {
   position: relative;
@@ -736,6 +802,14 @@ input[type="text"] {
   .hero-grid {
     grid-template-columns: 1.12fr 0.88fr;
     gap: 2.5rem;
+  }
+
+  .board {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .pad {
+    min-height: 11rem;
   }
 
   .how-grid {
